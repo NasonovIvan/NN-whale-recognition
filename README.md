@@ -13,7 +13,7 @@ In my work, I concentrated on the analysis of spectrogram images by the [Xceptio
 ### Data:
 The Kaggle training set includes approximately 30,000 labeled audio files. Each file encodes a two second monophonic audio clip in AIFF format with a 2000 Hz sampling rate. Based on these files, I obtained spectrogram images, as in the example below:
 <p align="center">
-	<img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/trian4.png" width="350">
+	<img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/train4.png" width="350">
 </p>
 
 ### Neural Network:
