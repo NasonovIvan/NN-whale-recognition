@@ -31,8 +31,30 @@ def ReadAIFF(file):
     strSig = s.readframes(nFrames)
     return im.np.fromstring(strSig, im.np.short).byteswap()
 
+# creating small good spectrograms from wavs for article whales data
+def create_images_data(path_train_audio, path_train_img, width=122, height=168):
+    onlywavfiles = [f for f in im.listdir(path_train_audio) if im.isfile(im.join(path_train_audio, f))]
+    LENGTH=256
+    for file in onlywavfiles:
+        whale_sample_file = path_train_audio + file
+
+        fs, x = im.read(whale_sample_file) 
+        f, t, Zxx_first = im.signal.stft(x, fs=fs, window=('hamming'), nperseg=LENGTH, noverlap=int(0.875*LENGTH), nfft=LENGTH)
+
+        Zxx = im.np.log(im.np.abs(Zxx_first))
+
+        px = 1/im.plt.rcParams['figure.dpi']
+
+        fig = im.plt.figure(figsize=(width*px, height*px), frameon=False) # 180, 190 (139x146) for Kaggle dataset
+        ax1 = im.plt.subplot()
+        ax1.pcolormesh(t, f, Zxx, cmap='viridis')
+        ax1.set_axis_off()
+        im.plt.savefig(path_train_img + file[0:-4:1] + '.png', bbox_inches='tight', pad_inches=0, dpi = 100)
+        fig.clear()
+        im.plt.close(fig)
+
 # create Kaggle dataset
-def CreateKaggleDataset(df, train_index, val_index, path_train_img):
+def CreateKaggleDataset(df, train_index, val_index, path_train_img, slice_name=5):
     '''
     CreateKaggleDataset function
 
@@ -41,6 +63,7 @@ def CreateKaggleDataset(df, train_index, val_index, path_train_img):
     train_index (int): how many samples should be in training set
     val_index (int): how many samples should be in validation set
     path_train_img (str): path to the images (clear or noised)
+    slice_name (int): number, which mean image file name in path (5 for kaggle and 4 for article)
 
     --Output--
     x_train (array)
@@ -59,7 +82,7 @@ def CreateKaggleDataset(df, train_index, val_index, path_train_img):
     x_test = []
     y_test = []
     for i in range(len(df["clip_name"])):
-        FILENAME = path_train_img + df["clip_name"][i][:-5] + '.png'
+        FILENAME = path_train_img + df["clip_name"][i][:-slice_name] + '.png' # slice_name=5 for kaggle and slice_name=4 for article
         rgba_image = im.Image.open(FILENAME)
         img = rgba_image.convert('RGB')
         img_arr = im.np.asarray(img)
