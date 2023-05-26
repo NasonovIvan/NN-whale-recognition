@@ -35,7 +35,13 @@ def ReadAIFF(file):
 def create_images_data(path_train_audio, path_train_img, width=180, height=190):
     onlywavfiles = [f for f in im.listdir(path_train_audio) if im.isfile(im.join(path_train_audio, f))]
     LENGTH=256
+
+    progress_counter_1 = 0
+    progress_counter_2 = 10
+
     for file in onlywavfiles:
+        progress_counter_1 += 1
+
         whale_sample_file = path_train_audio + file
 
         fs, x = im.read(whale_sample_file) 
@@ -53,8 +59,12 @@ def create_images_data(path_train_audio, path_train_img, width=180, height=190):
         fig.clear()
         im.plt.close(fig)
 
+        if (progress_counter_1 / len(onlywavfiles)) * 100 >= progress_counter_2:
+            print((progress_counter_1 / len(onlywavfiles)) * 100, '% completed')
+            progress_counter_2 += 10
+
 # create Kaggle dataset
-def CreateKaggleDataset(df, train_index, val_index, path_train_img, slice_name=5):
+def CreateKaggleDataset(df, path_train_img, slice_name=5):
     '''
     CreateKaggleDataset function
 
@@ -66,21 +76,12 @@ def CreateKaggleDataset(df, train_index, val_index, path_train_img, slice_name=5
     slice_name (int): number, which mean image file name in path (5 for kaggle and 4 for article)
 
     --Output--
-    x_train (array)
-    y_train (array)
-    x_val (array)
-    y_val (array)
-    x_test (array)
-    y_test (array)
+    x_data (array)
+    y_data (array)
     '''
     x_data = []
     y_data = []
 
-    # x_val = []
-    # y_val = []
-    
-    # x_test = []
-    # y_test = []
     for i in range(len(df["clip_name"])):
         FILENAME = path_train_img + df["clip_name"][i][:-slice_name] + '.png' # slice_name=5 for kaggle and slice_name=4 for article
         rgba_image = im.Image.open(FILENAME)
@@ -92,16 +93,7 @@ def CreateKaggleDataset(df, train_index, val_index, path_train_img, slice_name=5
         x_data.append(img_arr)
         y_data.append(df["label"][i])
 
-        # if i < train_index:
-        #     x_train.append(img_arr)
-        #     y_train.append(df["label"][i])
-        # elif i < val_index:
-        #     x_val.append(img_arr)
-        #     y_val.append(df["label"][i])
-        # else:
-        #     x_test.append(img_arr)
-        #     y_test.append(df["label"][i])
-    return im.np.array(x_data), im.np.array(y_data) #, im.np.array(x_val), im.np.array(y_val), im.np.array(x_test), im.np.array(y_test)
+    return im.np.array(x_data), im.np.array(y_data)
 
 # for plotting loss and accuracy history training
 def PlotLossAcc(TrainData, ValData, Epochs, TrainLabel, ValLabel, yLabel, title, ColTrain, ColVal, filename):
@@ -168,15 +160,9 @@ def compute_spectral_info(spectrum):
     return H_p, Complexity_sq, Complexity_jen, Complexity_abs
 
 # create Complexity-Entropy datasets, based on the compute_spectral_info function
-def create_HC_dataset_wavs(df, train_index, val_index, path_train, Noised=False):
-    x_train = []
-    y_train = []
-
-    x_val = []
-    y_val = []
-    
-    x_test = []
-    y_test = []
+def create_HC_dataset_wavs(df, path_train, Noised=False):
+    x_data = []
+    y_data = []
 
     progress_counter_1 = 0
     progress_counter_2 = 10
@@ -216,21 +202,14 @@ def create_HC_dataset_wavs(df, train_index, val_index, path_train, Noised=False)
             
         hc_plane = ((H_s, C_sqs, C_jsds, C_tvs))
 
-        if i < train_index:
-            x_train.append(hc_plane)
-            y_train.append(df["label"][i])
-        elif i < val_index:
-            x_val.append(hc_plane)
-            y_val.append(df["label"][i])
-        else:
-            x_test.append(hc_plane)
-            y_test.append(df["label"][i])
+        x_data.append(hc_plane)
+        y_data.append(df["label"][i])
 
         if (progress_counter_1 / len(df["clip_name"])) * 100 >= progress_counter_2:
             print((progress_counter_1 / len(df["clip_name"])) * 100, '% completed')
             progress_counter_2 += 10
     
-    return im.np.array(x_train), im.np.array(y_train), im.np.array(x_val), im.np.array(y_val), im.np.array(x_test), im.np.array(y_test)
+    return im.np.array(x_data), im.np.array(y_data)
 
 # compute Complexity-Entropy data from wav-file with ordpy
 def compute_hc_from_ordpy(FILENAME):
