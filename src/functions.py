@@ -32,7 +32,7 @@ def ReadAIFF(file):
     return im.np.fromstring(strSig, im.np.short).byteswap()
 
 # creating small good spectrograms from wavs for article whales data
-def create_images_data(path_train_audio, path_train_img, width=122, height=168):
+def create_images_data(path_train_audio, path_train_img, width=180, height=190):
     onlywavfiles = [f for f in im.listdir(path_train_audio) if im.isfile(im.join(path_train_audio, f))]
     LENGTH=256
     for file in onlywavfiles:
@@ -41,7 +41,7 @@ def create_images_data(path_train_audio, path_train_img, width=122, height=168):
         fs, x = im.read(whale_sample_file) 
         f, t, Zxx_first = im.signal.stft(x, fs=fs, window=('hamming'), nperseg=LENGTH, noverlap=int(0.875*LENGTH), nfft=LENGTH)
 
-        Zxx = im.np.log(im.np.abs(Zxx_first))
+        Zxx = im.np.log(im.np.abs(Zxx_first))**2
 
         px = 1/im.plt.rcParams['figure.dpi']
 
@@ -73,14 +73,14 @@ def CreateKaggleDataset(df, train_index, val_index, path_train_img, slice_name=5
     x_test (array)
     y_test (array)
     '''
-    x_train = []
-    y_train = []
+    x_data = []
+    y_data = []
 
-    x_val = []
-    y_val = []
+    # x_val = []
+    # y_val = []
     
-    x_test = []
-    y_test = []
+    # x_test = []
+    # y_test = []
     for i in range(len(df["clip_name"])):
         FILENAME = path_train_img + df["clip_name"][i][:-slice_name] + '.png' # slice_name=5 for kaggle and slice_name=4 for article
         rgba_image = im.Image.open(FILENAME)
@@ -89,16 +89,19 @@ def CreateKaggleDataset(df, train_index, val_index, path_train_img, slice_name=5
         rgba_image.close()
         #print(FILENAME)
 
-        if i < train_index:
-            x_train.append(img_arr)
-            y_train.append(df["label"][i])
-        elif i < val_index:
-            x_val.append(img_arr)
-            y_val.append(df["label"][i])
-        else:
-            x_test.append(img_arr)
-            y_test.append(df["label"][i])
-    return im.np.array(x_train), im.np.array(y_train), im.np.array(x_val), im.np.array(y_val), im.np.array(x_test), im.np.array(y_test)
+        x_data.append(img_arr)
+        y_data.append(df["label"][i])
+
+        # if i < train_index:
+        #     x_train.append(img_arr)
+        #     y_train.append(df["label"][i])
+        # elif i < val_index:
+        #     x_val.append(img_arr)
+        #     y_val.append(df["label"][i])
+        # else:
+        #     x_test.append(img_arr)
+        #     y_test.append(df["label"][i])
+    return im.np.array(x_data), im.np.array(y_data) #, im.np.array(x_val), im.np.array(y_val), im.np.array(x_test), im.np.array(y_test)
 
 # for plotting loss and accuracy history training
 def PlotLossAcc(TrainData, ValData, Epochs, TrainLabel, ValLabel, yLabel, title, ColTrain, ColVal, filename):
