@@ -50,3 +50,4 @@ I checked the implementation of this network for recognizing noised data and the
 ### References:
 - [Xception: Deep Learning with Depthwise Separable Convolutions](https://openaccess.thecvf.com/content_cvpr_2017/papers/Chollet_Xception_Deep_Learning_CVPR_2017_paper.pdf)
 - [InceptionTime: Finding AlexNet for time series classification](https://link.springer.com/article/10.1007/s10618-020-00710-y)
+- [Characterizing Time Series via Complexity-Entropy Curves](https://journals.aps.org/pre/abstract/10.1103/PhysRevE.95.062106)
