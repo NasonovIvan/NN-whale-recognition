@@ -32,7 +32,7 @@ Each Inception module applies univariate convolutions with kernels 1, 2 and 4 to
 A network based on InceptionTime but modified by Residual technology has also been developed. This mechanism is introduced in the Inception block, in which the input vector is transferred to the final layer by a separate channel, added to the data processed through one-dimensional convolution layers. The Residual technique effectively combats the problem of gradient fading and speeds up the learning process. The main goal of this modification is to evaluate the impact of Residual on the network's ability to classify time series.
 
 <p align="center">
-	<img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/inceptiontime-res-1.png" width="700">
+	<img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/inceptiontime-res-1.png" width="800">
 </p>
 
 ### Attention
@@ -41,9 +41,7 @@ A third neural network was also developed, which is a model consisting of a recu
 
 The main layer for feature selection in this network is Multi-Head Attention, which allows the model to consider different parts of the input data to highlight important features and establish relationships between them. Before applying the Self-Attention mechanism, the input data goes through three linear transformations of the weight matrices $W_Q, W_K, W_V$ (which are configured as model parameters during the training of the network) necessary to create $Q, K, V$ matrices for each element of the sequence to further represent them in a lower dimensional space. The importance of each element relative to the others is then evaluated by the scalar product of the weights.
 
-\[
-\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V
-\]
+$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$
 
 where $d_k$ - specifies the dimensionality of the space $K$ and $Q$, and may vary depending on the specific architecture and task. The division in the formula above by $\sqrt{d_k}=4$ is performed to normalise the magnitude of the attention weights and control the scale of the values. 
 The main property of this layer is the use of multiple transformations to emphasise different aspects of the data. To obtain a common feature representation of the data, the outputs of each transformation are combined into a single vector $Z_{0-7} \otimes W_0$, which takes into account the relationships between sequence elements and highlights the most important features.
@@ -51,7 +49,7 @@ The main property of this layer is the use of multiple transformations to emphas
 In the network, the data is fed to the LSTM and Multi-Head Attention blocks in parallel, and subsequently their outputs are combined into a single layer, from which they are passed through a normalisation layer to improve stability, accelerate training convergence and address gradient fading. The data is then fed into the fully-connected TimeDistributed layers, which process the data in each time step independently of each other. A schematic of the Self-Attention network model is shown in the figure below
 
 <p align="center">
-	<img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/attention-1.png" width="700">
+	<img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/attention-1.png" width="800">
 </p>
 
 ### Results:
@@ -66,14 +64,13 @@ As a result of training InceptionTime, InceptionTime Residual neural networks an
 
 The main quality indicator of the signal detection problem is the ROC curve (receiver operating characteristic) and the area under it AUC ROC. The figure shows the error matrix and ROC-curve of the best trained classifier InceptionTime Residual.
 
-<div style="display: flex;">
-    <div style="flex: 40%; padding: 10px;">
-        <img src="/images/ROC_incept_ris-1.png" alt="AUC-ROC">
-    </div>
-    <div style="flex: 40%; padding: 10px;">
-        <img src="/images/ConfMatr_incept_ris-1.png" alt="Matrix">
-    </div>
-</div>
+<p align="center">
+	<img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/ROC_incept_ris-1.png" width="250">
+</p>
+
+<p align="center">
+	<img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/ConfMatr_incept_ris-1.png" width="250">
+</p>
 
 Analysing the obtained results, it can be observed that all networks showed similar high performance with close AUC ROC values. Interestingly, the Self-Attention based network achieves performance of the main quality metrics comparable to the InceptionTime network, but has better Recall and Precision metrics, which indicates the good ability of this architecture to classify time series. InceptionTime network with Residual technology ranks first in all metrics in the table, which shows the high efficiency of this method.
 
