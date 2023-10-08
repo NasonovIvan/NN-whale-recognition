@@ -65,7 +65,7 @@ As a result of training InceptionTime, InceptionTime Residual neural networks an
 The main quality indicator of the signal detection problem is the ROC curve (receiver operating characteristic) and the area under it AUC ROC. The figure shows the error matrix and ROC-curve of the best trained classifier InceptionTime Residual.
 
 <p align="center">
-	<img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/ROC_incept_ris-1.png" width="270"> <img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/ConfMatr_incept_ris-1.png" width="270">
+	<img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/ROC_incept_ris-1.png" width="350"> <img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/ConfMatr_incept_ris-1.png" width="270">
 </p>
 
 
