@@ -143,24 +143,21 @@ def augment_data(x_data, y_data, augmentation_factor=2):
     x_augmented.extend(x_data)
     y_augmented.extend(y_data)
     
-    # Получаем индексы примеров с меткой 1
+    # Getting indexes of examples with label 1
     idx_label_1 = im.np.where(y_data == 1)[0]
     
-    # Создаем дополнительные примеры с меткой 1
+    # Create additional examples labelled 1
     for _ in range(augmentation_factor):
-        # Выбираем случайный индекс из примеров с меткой 1
+        # We select a random index from the examples labelled 1
         random_idx = im.np.random.choice(idx_label_1)
-        # Получаем пример с меткой 1
         example_label_1 = x_data[random_idx]
         
-        # Добавляем случайный шум или изменения к примеру с меткой 1
+        # Add random noise or changes for example with mark 1
         augmented_example = add_noise_or_change(example_label_1)
         
-        # Добавляем аугментированный пример в новые массивы
         x_augmented.append(augmented_example)
         y_augmented.append(1)
     
-    # Переводим новые массивы в numpy массивы
     x_augmented = im.np.array(x_augmented)
     y_augmented = im.np.array(y_augmented)
     
