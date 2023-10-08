@@ -32,7 +32,7 @@ Each Inception module applies univariate convolutions with kernels 1, 2 and 4 to
 A network based on InceptionTime but modified by Residual technology has also been developed. This mechanism is introduced in the Inception block, in which the input vector is transferred to the final layer by a separate channel, added to the data processed through one-dimensional convolution layers. The Residual technique effectively combats the problem of gradient fading and speeds up the learning process. The main goal of this modification is to evaluate the impact of Residual on the network's ability to classify time series.
 
 <p align="center">
-	<img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/inceptiontime-res-1.png" width="400">
+	<img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/inceptiontime-res-1.png" width="700">
 </p>
 
 ### Attention
@@ -51,7 +51,7 @@ The main property of this layer is the use of multiple transformations to emphas
 In the network, the data is fed to the LSTM and Multi-Head Attention blocks in parallel, and subsequently their outputs are combined into a single layer, from which they are passed through a normalisation layer to improve stability, accelerate training convergence and address gradient fading. The data is then fed into the fully-connected TimeDistributed layers, which process the data in each time step independently of each other. A schematic of the Self-Attention network model is shown in the figure below
 
 <p align="center">
-	<img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/attention-1.png" width="400">
+	<img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/attention-1.png" width="700">
 </p>
 
 ### Results:
@@ -67,10 +67,10 @@ As a result of training InceptionTime, InceptionTime Residual neural networks an
 The main quality indicator of the signal detection problem is the ROC curve (receiver operating characteristic) and the area under it AUC ROC. The figure shows the error matrix and ROC-curve of the best trained classifier InceptionTime Residual.
 
 <div style="display: flex;">
-    <div style="flex: 50%; padding: 10px;">
+    <div style="flex: 40%; padding: 10px;">
         <img src="/images/ROC_incept_ris-1.png" alt="AUC-ROC">
     </div>
-    <div style="flex: 50%; padding: 10px;">
+    <div style="flex: 40%; padding: 10px;">
         <img src="/images/ConfMatr_incept_ris-1.png" alt="Matrix">
     </div>
 </div>
