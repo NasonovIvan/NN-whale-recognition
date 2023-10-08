@@ -18,8 +18,13 @@ from matplotlib.font_manager import FontProperties
 
 import ssl
 
-from keras.layers import Dense, Conv2D, Flatten, ConvLSTM2D, Input, Rescaling, LSTM, Concatenate, Dropout, GRU, Conv1D
+from keras.layers import Dense, Flatten, Input, Dropout, Concatenate, MaxPooling1D
+from keras.layers import TimeDistributed, ReLU
+from tensorflow.keras.layers import LayerNormalization, BatchNormalization, GlobalAveragePooling1D, Attention, MultiHeadAttention
+from keras.layers import Rescaling, LSTM, ConvLSTM2D, GRU, Conv1D, Conv2D
 from keras import Sequential
+from tensorflow.keras.models import Model
+import keras.backend as K
 
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split

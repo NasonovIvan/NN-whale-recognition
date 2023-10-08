@@ -95,16 +95,117 @@ def CreateKaggleDataset(df, path_train_img, slice_name=5):
 
     return im.np.array(x_data), im.np.array(y_data)
 
+#Defining Function to add random noise (Ornstein-Uhlenbeck_process) in actions to increase Exploration
+class OUActionNoise:
+    def __init__(self, mean, std_deviation, theta=0.15, dt=0.1, x_initial=None):
+        self.theta = theta
+        self.mean = mean
+        self.std_dev = std_deviation
+        self.dt = dt
+        self.x_initial = x_initial
+        self.reset()
+
+    def __call__(self):
+        # Formula taken from https://www.wikipedia.org/wiki/Ornstein-Uhlenbeck_process.
+        x = (
+            self.x_prev
+            + self.theta * (self.mean - self.x_prev) * self.dt
+            + self.std_dev * im.np.sqrt(self.dt) * im.np.random.normal(size=self.mean.shape)
+        )
+        # Store x into x_prev
+        # Makes next noise dependent on current one
+        self.x_prev = x
+        return x
+
+    def reset(self):
+        if self.x_initial is not None:
+            self.x_prev = self.x_initial
+        else:
+            self.x_prev = im.np.zeros_like(self.mean)
+
+# noise object for augmentation
+std_dev = 0.01
+noise_object = OUActionNoise(mean=im.np.zeros(1), std_deviation=float(std_dev) * im.np.ones(1))
+
+# function for adding noise to data
+def add_noise_or_change(example):
+    noise = noise_object()
+    # augmented_example = example + im.np.random.normal(0, 0.008, size=example.shape)
+    augmented_example = example + noise
+    return augmented_example
+
+# function for data augmentation by adding noise to data and
+# increase the number of samples with the label 1
+def augment_data(x_data, y_data, augmentation_factor=2):
+    x_augmented = []
+    y_augmented = []
+    
+    x_augmented.extend(x_data)
+    y_augmented.extend(y_data)
+    
+    # Получаем индексы примеров с меткой 1
+    idx_label_1 = im.np.where(y_data == 1)[0]
+    
+    # Создаем дополнительные примеры с меткой 1
+    for _ in range(augmentation_factor):
+        # Выбираем случайный индекс из примеров с меткой 1
+        random_idx = im.np.random.choice(idx_label_1)
+        # Получаем пример с меткой 1
+        example_label_1 = x_data[random_idx]
+        
+        # Добавляем случайный шум или изменения к примеру с меткой 1
+        augmented_example = add_noise_or_change(example_label_1)
+        
+        # Добавляем аугментированный пример в новые массивы
+        x_augmented.append(augmented_example)
+        y_augmented.append(1)
+    
+    # Переводим новые массивы в numpy массивы
+    x_augmented = im.np.array(x_augmented)
+    y_augmented = im.np.array(y_augmented)
+    
+    return x_augmented, y_augmented
+
 # for plotting loss and accuracy history training
-def PlotLossAcc(TrainData, ValData, Epochs, TrainLabel, ValLabel, yLabel, title, ColTrain, ColVal, filename):
+def PlotLossAcc(TrainData, ValData, Epochs, TrainLabel, ValLabel, yLabel, title, ColTrain, ColVal, filename, lr=False):
     pdf = im.PdfPages(filename)
     fig, ax = im.plt.subplots(figsize=(8, 6))
     ax.plot(Epochs, TrainData, color=ColTrain, label=TrainLabel)
-    ax.plot(Epochs, ValData, color=ColVal, label=ValLabel)
-    im.plt.title(title)
-    ax.set_ylabel(yLabel)
-    ax.set_xlabel("Epochs")
-    im.plt.legend()
+    if lr == False:
+        ax.plot(Epochs, ValData, color=ColVal, label=ValLabel)
+    if title != False:
+        im.plt.title(title)
+    ax.set_ylabel(yLabel, fontsize=16)
+    ax.set_xlabel(r'$Epochs$', fontsize=16)
+    im.plt.tick_params(axis='both', which='major', labelsize=14)
+    if lr == False:
+        im.plt.legend(fontsize=14)
+    im.plt.grid()
+    pdf.savefig(fig)
+    pdf.close()
+    im.plt.show()
+
+# plot data distribution
+def PlotDataDistribution(samples, counts, bar_labels, bar_colors, filename, legend=True):
+    pdf = im.PdfPages(filename)
+
+    fig, ax = im.plt.subplots()
+
+    bar_container = ax.bar(samples, counts, label=bar_labels, color=bar_colors)
+
+    for bar in bar_container:
+        height = bar.get_height()
+        ax.annotate('{}'.format(height),
+                    xy=(bar.get_x() + bar.get_width() / 2, height),
+                    xytext=(0, 3),
+                    textcoords="offset points",
+                    ha='center', va='bottom')
+
+    ax.set(ylim=(0, 25000))
+
+    # ax.legend(title='Labels')
+    if legend == True:
+        ax.legend()
     pdf.savefig(fig)
     pdf.close()
     im.plt.show()
@@ -160,7 +261,7 @@ def compute_spectral_info(spectrum):
     return H_p, Complexity_sq, Complexity_jen, Complexity_abs
 
 # create Complexity-Entropy datasets, based on the compute_spectral_info function
-def create_HC_dataset_wavs(df, path_train, Noised=False):
+def create_HC_dataset_wavs(df, path_train, Noised=False, binary=False):
     x_data = []
     y_data = []
 
@@ -321,3 +422,36 @@ def create_hc_dataset_ordpy(df, path_train, train_index, val_index):
     hc_y_test = labels[val_index:]
     
     return hc_train, hc_y_train, hc_val, hc_y_val, hc_test, hc_y_test
+
+# ==== evaluate functions recall, precision and f1-score for neural network ====
+def recall(y_true, y_pred):
+    y_true = im.K.ones_like(y_true)
+    true_positives = im.K.sum(im.K.round(im.K.clip(y_true * y_pred, 0, 1)))
+    all_positives = im.K.sum(im.K.round(im.K.clip(y_true, 0, 1)))
+
+    recall = true_positives / (all_positives + im.K.epsilon())
+    return recall
+
+def precision(y_true, y_pred):
+    y_true = im.K.ones_like(y_true)
+    true_positives = im.K.sum(im.K.round(im.K.clip(y_true * y_pred, 0, 1)))
+
+    predicted_positives = im.K.sum(im.K.round(im.K.clip(y_pred, 0, 1)))
+    precision = true_positives / (predicted_positives + im.K.epsilon())
+    return precision
+
+def f1_score(y_true, y_pred):
+    prec = precision(y_true, y_pred)
+    rec = recall(y_true, y_pred)
+    return 2*((prec*rec)/(prec+rec+im.K.epsilon()))
+
+# Defining binary focal loss function
+def binary_focal_loss(gamma = 2., alpha = .25):
+    def tf_binary_focal_loss_fixed(y_true, y_pred):
+         pt_1 = im.tf.where(im.tf.equal(y_true, 1), y_pred, im.tf.ones_like(y_pred))
+         pt_0 = im.tf.where(im.tf.equal(y_true, 0), y_pred, im.tf.zeros_like(y_pred))
+         epsilon = im.K.epsilon()
+         pt_1 = im.K.clip(pt_1, epsilon, 1. - epsilon)
+         pt_0 = im.K.clip(pt_0, epsilon, 1. - epsilon)
+         return -im.K.sum(alpha * im.K.pow(1. - pt_1, gamma) * im.K.log(pt_1)) -im.K.sum((1 - alpha) * im.K.pow(pt_0, gamma) * im.K.log(1. - pt_0))
+    return tf_binary_focal_loss_fixed

@@ -1,0 +1,11 @@
+data/
+datasets/
+src/InceptionTime/x_data_hc.npy
+src/InceptionTime/y_data_hc.npy
+src/Transformer/x_data_hc.npy
+src/Transformer/y_data_hc.npy
+src/x_data_hc.npy
+src/y_data_hc.npy
+.DS_Store
+/src/.ipynb_checkpoints/
+/src/__pycache__/
