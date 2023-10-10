@@ -16,13 +16,6 @@ The Kaggle training set includes approximately 30,000 labeled audio files. Each 
 	<img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/train4.png" width="350">
 </p>
 
-<!-- ### Xception:
-Xception is a convolutional neural network that is 71 layers deep. I loaded a pretrained version of the network trained on more than a million images from the ImageNet database. The pretrained network can classify images into 1000 object categories. As a result, the network has learned rich feature representations for a wide range of images, and it is what I used for recognizing and classifying whale voices.
-
-<p align="center">
-	<img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/depthwise.png" width="350">
-</p> -->
-
 ### Inception
 
 The InceptionTime neural network is based on the idea of using Inception modules to analyse time series data. Each such module contains three convolution branches with different sizes of kernels in parallel branches, after which their outputs are combined to obtain a common feature representation.
@@ -52,7 +45,20 @@ In the network, the data is fed to the LSTM and Multi-Head Attention blocks in p
 	<img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/attention-1.png" width="800">
 </p>
 
+### Xception:
+[Xception](https://arxiv.org/abs/1610.02357) is a convolutional neural network that is 71 layers deep. I loaded a pretrained version of the network trained on more than a million images from the ImageNet database. The pretrained network can classify images into 1000 object categories. As a result, the network has learned rich feature representations for a wide range of images, and it is what I used for recognizing and classifying whale voices' spectrograms.
+
+<p align="center">
+	<img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/depthwise.png" width="350">
+</p>
+
+Training and testing of neural networks has been carried out on two different datasets of similar nature. For training, a dataset from the Kaggle competition with audio recordings of whale songs with each recording lasting 2 seconds and sampling rate of 2 kHz was chosen.
+
+The neural networks were tested on the dataset from the [article](https://arxiv.org/abs/2001.09127), whose parameters differ from the training dataset: they are audio signals of 3 seconds duration each and a sampling rate of 1 kHz. In addition, these two datasets contain data separated by both the time and geography of their recording, i.e., generally speaking, they are potentially quite different entities, united only by the common nature of the audio signature.
+
 ### Results:
+
+#### InceptionTime and Self-Attention
 
 As a result of training InceptionTime, InceptionTime Residual neural networks and a network based on Self-Attention architecture with LSTM blocks to solve the problem of binary classification of information feature time series, the following values of metrics on the test dataset were obtained as shown in the table below:
 
@@ -68,8 +74,17 @@ The main quality indicator of the signal detection problem is the ROC curve (rec
 	<img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/ROC_incept_ris-1.png" width="350"> <img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/ConfMatr_incept_ris-1.png" width="270">
 </p>
 
-
 Analysing the obtained results, it can be observed that all networks showed similar high performance with close AUC ROC values. Interestingly, the Self-Attention based network achieves performance of the main quality metrics comparable to the InceptionTime network, but has better Recall and Precision metrics, which indicates the good ability of this architecture to classify time series. InceptionTime network with Residual technology ranks first in all metrics in the table, which shows the high efficiency of this method.
+
+#### Xception
+
+Xception and its application based on transfer learning technology are effective tools for solving binary audio signal classification problems and allow, having learnt on one dataset, to apply the acquired knowledge on third-party data. These results can be useful for marine mammal monitoring and research, as well as for other applications in audio signal processing and computer vision.
+
+| Dataset                | Accuracy | F1-score | Recall | Precision |
+|------------------------| ---------|----------|--------|-----------|
+| Kaggle          		 |   0.99   |   0.99   |  0.99  |    0.99   |
+| Article 				 |   0.67   |   0.88   |  0.67  |    0.76   |
+
 
 ### References:
 - [Xception: Deep Learning with Depthwise Separable Convolutions](https://openaccess.thecvf.com/content_cvpr_2017/papers/Chollet_Xception_Deep_Learning_CVPR_2017_paper.pdf)

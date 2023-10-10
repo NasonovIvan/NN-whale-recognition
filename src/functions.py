@@ -127,6 +127,105 @@ class OUActionNoise:
 std_dev = 0.01
 noise_object = OUActionNoise(mean=im.np.zeros(1), std_deviation=float(std_dev) * im.np.ones(1))
 
+# creating augmentation Kaggle dataset for Xception Network
+def CreateKaggleDatasetNew(csv_file, image_folder, target_size=(255, 255)):
+    '''
+    -- Input --
+    - csv_file - Path to the CSV file with labels
+    - image_folder - Path to the folder containing spectrogram images
+
+    '''
+    # Load labels from the CSV file
+    labels_df = im.pd.read_csv(csv_file)
+
+    # Create a dictionary of labels for each file
+    labels_dict = {}
+    for _, row in labels_df.iterrows():
+        filename = row['clip_name']
+        label = row['label']
+        labels_dict[filename] = str(label)
+
+    # Get a list of image files
+    image_files = im.os.listdir(image_folder)
+
+    # Create a list of (image file path, label) pairs
+    image_label_pairs = [(im.os.path.join(image_folder, filename), labels_dict.get(filename[:-4] + '.aiff')) for filename in image_files]
+
+    # Create a list of (image file path, label) pairs with label equal to 1 (only whales)
+    image_label_pairs_whales = [(im.os.path.join(image_folder, filename), labels_dict.get(filename[:-4] + '.aiff'))
+                          for filename in image_files if labels_dict.get(filename[:-4] + '.aiff') == '1']
+
+    # Data augmentation function
+    def augment_image(image, label):
+        # Random color augmentation
+        image = im.tf.image.random_hue(image, 0.08)
+        image = im.tf.image.random_saturation(image, 0.6, 1.6)
+        image = im.tf.image.random_brightness(image, 0.05)
+        
+        return image, label
+
+    # Load and preprocess images
+    def load_preprocess_images(image_label_pairs):
+        images = []
+        for image_path, _ in image_label_pairs:
+            image = im.tf.io.read_file(image_path)
+            image = im.tf.image.decode_png(image, channels=3)
+            image = im.tf.image.convert_image_dtype(image, im.tf.float32)
+            image = im.tf.image.resize(image, target_size)  # Resize the image
+            images.append(image)
+        return images
+    
+    # Get labels from pairs (image, label)
+    def get_labels(image_label_pairs):
+        labels = [int(label) for _, label in image_label_pairs]
+        return labels
+
+    images_original = load_preprocess_images(image_label_pairs)
+    labels_original = get_labels(image_label_pairs)
+
+    # print("orig", images_original)
+
+    images_augmented = load_preprocess_images(image_label_pairs_whales)
+    labels_augmented = get_labels(image_label_pairs_whales)
+
+    original_dataset = im.tf.data.Dataset.from_tensor_slices((images_original, labels_original))
+    augmented_dataset = im.tf.data.Dataset.from_tensor_slices((images_augmented, labels_augmented))
+    augmented_dataset = augmented_dataset.map(augment_image)  # Apply data augmentation
+
+    # Combine the original and augmented datasets
+    combined_dataset = original_dataset.concatenate(augmented_dataset)
+
+    return combined_dataset
+
+# Function for creating spectrograms' dataset from the article data
+def create_article_dataset(csv_file, image_folder, image_size=(255, 255)):
+    # Load the CSV file with labels
+    df = im.pd.read_csv(csv_file, sep=';')
+    
+    # Function to load and preprocess images
+    def load_and_preprocess_image(image_path, label):
+        # Load the image
+        image = im.tf.io.read_file(image_path)
+        image = im.tf.image.decode_image(image, channels=3, expand_animations=False)
+        # image = tf.image.decode_image(image, channels=3)
+        # Resize the image to the specified size
+        image = im.tf.image.resize(image, image_size)
+        # Normalize pixel values to the range [0, 1]
+        image = im.tf.cast(image, im.tf.float32) / 255.0
+        return image, label
+    
+    # Create a list of image paths and labels
+    image_paths = [im.os.path.join(image_folder, filename[:-4] + '.png') for filename in df['clip_name'] if filename[0] != 'A']
+    labels = [int(df['label'][i]) for i in range(len(df['label'])) if df['clip_name'][i][0] != 'A']
+    
+    # Create a dataset using tf.data.Dataset
+    dataset = im.tf.data.Dataset.from_tensor_slices((image_paths, labels))
+    
+    # Load and preprocess images
+    dataset = dataset.map(load_and_preprocess_image)
+    
+    return dataset, im.np.array(labels)
+
 # function for adding noise to data
 def add_noise_or_change(example):
     noise = noise_object()
@@ -452,3 +551,16 @@ def binary_focal_loss(gamma = 2., alpha = .25):
          pt_0 = im.K.clip(pt_0, epsilon, 1. - epsilon)
          return -im.K.sum(alpha * im.K.pow(1. - pt_1, gamma) * im.K.log(pt_1)) -im.K.sum((1 - alpha) * im.K.pow(pt_0, gamma) * im.K.log(1. - pt_0))
     return tf_binary_focal_loss_fixed
+
+# plot article dataset examples for Xception Network
+def PlotArticleExample(article_test, num):
+    for image, label in article_test.take(num):
+        # Convert the TensorFlow tensor to a NumPy array
+        image = image.numpy()
+        print(image.shape)
+
+        # Plot the image
+        im.plt.imshow(image)
+        im.plt.title(f"Label: {label}")
+        im.plt.axis('off')  # Turn off axis labels
+        im.plt.show()
