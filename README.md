@@ -8,13 +8,16 @@ Transfer Learning Xception was used for recognizing and classifying whale voices
 ### Description:
 In this project I analyze [The Marinexplore and Cornell University Whale Detection Challenge](https://www.kaggle.com/c/whale-detection-challenge), where participants were tasked with developing an algorithm to correctly classify audio clips containing sounds from the North Atlantic right whale.
 
-In my work, I concentrated on the analysis of spectrogram images by the [Xception](https://openaccess.thecvf.com/content_cvpr_2017/papers/Chollet_Xception_Deep_Learning_CVPR_2017_paper.pdf) neural network.
+In my work, I concentrated on the analysis of spectrogram images by the [Xception](https://openaccess.thecvf.com/content_cvpr_2017/papers/Chollet_Xception_Deep_Learning_CVPR_2017_paper.pdf) neural network and applied [InceptionTime](https://link.springer.com/article/10.1007/s10618-020-00710-y) network with network, based on Multi-Head Attention, to information characteristics classification.
 
 ### Data:
 The Kaggle training set includes approximately 30,000 labeled audio files. Each file encodes a two second monophonic audio clip in AIFF format with a 2000 Hz sampling rate. Based on these files, I obtained spectrogram images, as in the example below:
 <p align="center">
 	<img src="https://github.com/NasonovIvan/NN-whale-recognition/blob/main/images/train4.png" width="350">
 </p>
+
+### Formation of information characteristics
+It is proposed to use such information characteristics as spectral entropy and complexity as features forming time series for recognizing acoustic signals of biological origin. In this case, different variants of statistical complexity $C_{SQ}, C_{JSD}, C_{TV}$ reach their maximum values on different discrete distributions, i.e. they are best suited for detection of signals with different spectral structure, which allows us to use them together with entropy $H$ as features in the classification task.
 
 ### Inception
 
